@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <p>Вы собираетесь обновить цены для следующих вариантов:</p>
+    
+    <ul>
+    {% for variant in variants %}
+        <li><strong>{{ variant.sku }}</strong> - текущая цена: {{ variant.price }} ₽</li>
+    {% endfor %}
+    </ul>
+    
+    <div style="margin-top: 20px;">
+        <label for="new_price" style="font-weight: bold;">Новая цена (₽):</label>
+        <input type="number" name="new_price" step="0.01" required 
+               style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-left: 10px;">
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <input type="hidden" name="action" value="{{ action }}">
+        <input type="submit" name="apply" value="Применить" 
+               style="padding: 10px 20px; background: #417690; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        <a href="{% url 'admin:main_productvariant_changelist' %}" 
+           style="padding: 10px 20px; background: #999; color: white; text-decoration: none; border-radius: 4px; margin-left: 10px;">
+            Отмена
+        </a>
+    </div>
+</form>
+{% endblock %}

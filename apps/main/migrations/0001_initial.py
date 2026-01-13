@@ -5,182 +5,346 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(blank=True, unique=True)),
-                ('is_active', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("slug", models.SlugField(blank=True, unique=True)),
+                ("is_active", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Категория',
-                'verbose_name_plural': 'Категории',
-                'db_table': 'categories',
-                'ordering': ['name'],
+                "verbose_name": "Категория",
+                "verbose_name_plural": "Категории",
+                "db_table": "categories",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Option',
+            name="Option",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
             ],
             options={
-                'verbose_name': 'Опция товара',
-                'verbose_name_plural': 'Опции товара',
-                'db_table': 'product_options',
-                'ordering': ['name'],
+                "verbose_name": "Опция товара",
+                "verbose_name_plural": "Опции товара",
+                "db_table": "product_options",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=250)),
-                ('slug', models.SlugField(blank=True, unique=True)),
-                ('excerpt', models.CharField(blank=True, max_length=500)),
-                ('description', models.TextField(blank=True)),
-                ('is_active', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=250)),
+                ("slug", models.SlugField(blank=True, unique=True)),
+                ("excerpt", models.CharField(blank=True, max_length=500)),
+                ("description", models.TextField(blank=True)),
+                ("is_active", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'verbose_name': 'Товар',
-                'verbose_name_plural': 'Товары',
-                'db_table': 'products',
-                'ordering': ['name'],
+                "verbose_name": "Товар",
+                "verbose_name_plural": "Товары",
+                "db_table": "products",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='OptionValue',
+            name="OptionValue",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(max_length=100)),
-                ('option', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='values', to='main.option')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.CharField(max_length=100)),
+                (
+                    "option",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="values",
+                        to="main.option",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Значение опции товара',
-                'verbose_name_plural': 'Значения опций товара',
-                'db_table': 'product_option_values',
-                'ordering': ['value'],
-                'unique_together': {('option', 'value')},
+                "verbose_name": "Значение опции товара",
+                "verbose_name_plural": "Значения опций товара",
+                "db_table": "product_option_values",
+                "ordering": ["value"],
+                "unique_together": {("option", "value")},
             },
         ),
         migrations.CreateModel(
-            name='ProductCategory',
+            name="ProductCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='category_products', to='main.category')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_categories', to='main.product')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="category_products",
+                        to="main.category",
+                    ),
+                ),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="product_categories",
+                        to="main.product",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Категория товара',
-                'verbose_name_plural': 'Категории товара',
-                'db_table': 'product_categories',
+                "verbose_name": "Категория товара",
+                "verbose_name_plural": "Категории товара",
+                "db_table": "product_categories",
             },
         ),
         migrations.AddField(
-            model_name='product',
-            name='categories',
-            field=models.ManyToManyField(related_name='products', through='main.ProductCategory', to='main.category'),
+            model_name="product",
+            name="categories",
+            field=models.ManyToManyField(
+                related_name="products",
+                through="main.ProductCategory",
+                to="main.category",
+            ),
         ),
         migrations.CreateModel(
-            name='ProductContent',
+            name="ProductContent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('care', 'Care'), ('size_chart', 'Size Chart'), ('materials', 'Materials'), ('delivery', 'Delivery Information')], max_length=50)),
-                ('title', models.CharField(max_length=200)),
-                ('content', models.TextField()),
-                ('position', models.PositiveIntegerField(default=0)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='contents', to='main.product')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("care", "Care"),
+                            ("size_chart", "Size Chart"),
+                            ("materials", "Materials"),
+                            ("delivery", "Delivery Information"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("title", models.CharField(max_length=200)),
+                ("content", models.TextField()),
+                ("position", models.PositiveIntegerField(default=0)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="contents",
+                        to="main.product",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Содержание товара',
-                'verbose_name_plural': 'Содержания товара',
-                'db_table': 'product_contents',
-                'ordering': ['position'],
+                "verbose_name": "Содержание товара",
+                "verbose_name_plural": "Содержания товара",
+                "db_table": "product_contents",
+                "ordering": ["position"],
             },
         ),
         migrations.CreateModel(
-            name='ProductVariant',
+            name="ProductVariant",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sku', models.CharField(max_length=100, unique=True)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('stock', models.PositiveIntegerField(default=0)),
-                ('is_active', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variants', to='main.product')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("sku", models.CharField(max_length=100, unique=True)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("stock", models.PositiveIntegerField(default=0)),
+                ("is_active", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="variants",
+                        to="main.product",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Вариант товара',
-                'verbose_name_plural': 'Варианты товара',
-                'db_table': 'product_variants',
-                'ordering': ['sku'],
+                "verbose_name": "Вариант товара",
+                "verbose_name_plural": "Варианты товара",
+                "db_table": "product_variants",
+                "ordering": ["sku"],
             },
         ),
         migrations.CreateModel(
-            name='ProductMedia',
+            name="ProductMedia",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('image', 'Image'), ('video', 'Video')], max_length=50)),
-                ('url', models.URLField()),
-                ('position', models.PositiveIntegerField(default=0)),
-                ('is_main', models.BooleanField(default=False)),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='media', to='main.product')),
-                ('variant', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='media', to='main.productvariant')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[("image", "Image"), ("video", "Video")], max_length=50
+                    ),
+                ),
+                ("url", models.URLField()),
+                ("position", models.PositiveIntegerField(default=0)),
+                ("is_main", models.BooleanField(default=False)),
+                ("uploaded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "product",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="media",
+                        to="main.product",
+                    ),
+                ),
+                (
+                    "variant",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="media",
+                        to="main.productvariant",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Медиа товара',
-                'verbose_name_plural': 'Медиа товара',
-                'db_table': 'product_media',
-                'ordering': ['-uploaded_at'],
+                "verbose_name": "Медиа товара",
+                "verbose_name_plural": "Медиа товара",
+                "db_table": "product_media",
+                "ordering": ["-uploaded_at"],
             },
         ),
         migrations.CreateModel(
-            name='VariantOptionValue',
+            name="VariantOptionValue",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('option_value', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variant_options', to='main.optionvalue')),
-                ('variant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='option_values', to='main.productvariant')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "option_value",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="variant_options",
+                        to="main.optionvalue",
+                    ),
+                ),
+                (
+                    "variant",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="option_values",
+                        to="main.productvariant",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Значение опции варианта',
-                'verbose_name_plural': 'Значения опций варианта',
-                'db_table': 'variant_option_values',
+                "verbose_name": "Значение опции варианта",
+                "verbose_name_plural": "Значения опций варианта",
+                "db_table": "variant_option_values",
             },
         ),
         migrations.AddField(
-            model_name='productvariant',
-            name='options',
-            field=models.ManyToManyField(related_name='variants', through='main.VariantOptionValue', to='main.optionvalue'),
+            model_name="productvariant",
+            name="options",
+            field=models.ManyToManyField(
+                related_name="variants",
+                through="main.VariantOptionValue",
+                to="main.optionvalue",
+            ),
         ),
         migrations.AddIndex(
-            model_name='productcategory',
-            index=models.Index(fields=['product', 'category'], name='product_cat_product_dea5f5_idx'),
+            model_name="productcategory",
+            index=models.Index(
+                fields=["product", "category"], name="product_cat_product_dea5f5_idx"
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='productcategory',
-            unique_together={('product', 'category')},
+            name="productcategory",
+            unique_together={("product", "category")},
         ),
         migrations.AddIndex(
-            model_name='variantoptionvalue',
-            index=models.Index(fields=['variant', 'option_value'], name='variant_opt_variant_511d66_idx'),
+            model_name="variantoptionvalue",
+            index=models.Index(
+                fields=["variant", "option_value"],
+                name="variant_opt_variant_511d66_idx",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='variantoptionvalue',
-            unique_together={('variant', 'option_value')},
+            name="variantoptionvalue",
+            unique_together={("variant", "option_value")},
         ),
     ]

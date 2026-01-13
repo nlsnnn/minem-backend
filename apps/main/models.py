@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.forms import ValidationError
 from django.utils.text import slugify
@@ -135,7 +136,9 @@ class ProductVariant(models.Model):
     product = models.ForeignKey(
         Product, on_delete=models.CASCADE, related_name="variants", verbose_name="Товар"
     )
-    sku = models.CharField(max_length=100, unique=True, verbose_name="Артикул")
+    sku = models.CharField(
+        max_length=100, unique=True, verbose_name="Артикул", blank=True
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
     stock = models.PositiveIntegerField(default=0, verbose_name="Остаток")
     is_active = models.BooleanField(default=False, verbose_name="Активен")
@@ -153,6 +156,13 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.sku}"
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            # Автогенерация SKU если не указан
+            base_sku = f"{self.product.slug}-{uuid.uuid4().hex[:8]}".upper()
+            self.sku = base_sku
+        super().save(*args, **kwargs)
 
 
 class VariantOptionValue(models.Model):

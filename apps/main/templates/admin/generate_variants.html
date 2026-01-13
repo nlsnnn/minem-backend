@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %} {% block content %}
+
+<div class="module">
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-row">
+      {{ form.options.errors }}
+      <label>{{ form.options.label }}:</label>
+      <span class="helptext">{{ form.options.help_text }}</span>
+      <div style="margin-left: 20px">{{ form.options }}</div>
+    </div>
+
+    <div class="form-row">
+      {{ form.base_price.errors }}
+      <label for="id_base_price">{{ form.base_price.label }}:</label>
+      {{ form.base_price }}
+      <span class="helptext">{{ form.base_price.help_text }}</span>
+    </div>
+
+    <div class="form-row">
+      {{ form.stock.errors }}
+      <label for="id_stock">{{ form.stock.label }}:</label>
+      {{ form.stock }}
+      <span class="helptext">{{ form.stock.help_text }}</span>
+    </div>
+
+    <div class="form-row">
+      <label> {{ form.is_active }} {{ form.is_active.label }} </label>
+    </div>
+
+    <div class="form-row">
+      <label>
+        {{ form.copy_product_media }} {{ form.copy_product_media.label }}
+      </label>
+      <span class="helptext">{{ form.copy_product_media.help_text }}</span>
+    </div>
+
+    <div class="submit-row">
+      <input type="submit" value="Сгенерировать варианты" class="default" />
+      <a
+        href="{% url 'admin:main_product_change' product.id %}"
+        class="button cancel"
+        >Отмена</a
+      >
+    </div>
+  </form>
+</div>
+
+<div class="module" style="margin-top: 30px">
+  <h2>Примечание</h2>
+  <ul>
+    <li>Выберите опции (например, "Цвет" и "Размер")</li>
+    <li>Система создаст все комбинации (3 цвета × 4 размера = 12 вариантов)</li>
+    <li>Артикул генерируется автоматически (например, "T-SHIRT-RED-M")</li>
+    <li>Цена и остаток применяются ко всем вариантам</li>
+  </ul>
+</div>
+{% endblock %}

@@ -27,6 +27,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "apps.main",
     "apps.orders",
+    "apps.payment",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -135,6 +136,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
@@ -155,6 +157,11 @@ CORS_ALLOWED_ORIGINS = [
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
+
+
+# Yookassa Settings
+YOOKASSA_ACCOUNT_ID = config("YOOKASSA_ACCOUNT_ID", default="")
+YOOKASSA_SECRET_KEY = config("YOOKASSA_SECRET_KEY", default="")
 
 
 # URL фронтенда для редиректов

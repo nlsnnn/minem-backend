@@ -24,9 +24,7 @@ class BulkGenerateVariantsForm(forms.Form):
         help_text="Количество на складе для всех вариантов",
         required=True,
     )
-    is_active = forms.BooleanField(
-        initial=True, label="Активен", required=False
-    )
+    is_active = forms.BooleanField(initial=True, label="Активен", required=False)
     copy_product_media = forms.BooleanField(
         initial=True,
         label="Копировать медиа",

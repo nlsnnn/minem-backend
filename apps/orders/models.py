@@ -32,6 +32,9 @@ class Order(models.Model):
     total_amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Общая сумма"
     )
+    payment_url = models.URLField(
+        max_length=500, blank=True, null=True, verbose_name="Ссылка на оплату"
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
 

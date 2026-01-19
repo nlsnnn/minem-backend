@@ -4,20 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orders', '0003_alter_order_id'),
+        ("orders", "0003_alter_order_id"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ordercustomer',
-            name='city',
-            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='Город'),
+            model_name="ordercustomer",
+            name="city",
+            field=models.CharField(
+                blank=True, max_length=100, null=True, verbose_name="Город"
+            ),
         ),
         migrations.AlterField(
-            model_name='ordercustomer',
-            name='comment',
-            field=models.TextField(blank=True, null=True, verbose_name='Комментарий'),
+            model_name="ordercustomer",
+            name="comment",
+            field=models.TextField(blank=True, null=True, verbose_name="Комментарий"),
         ),
     ]

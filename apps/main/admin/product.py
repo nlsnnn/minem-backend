@@ -89,7 +89,9 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
                 )
 
                 if created > 0:
-                    messages.success(request, f"Создано вариантов: {created}. Пропущено: {skipped}")
+                    messages.success(
+                        request, f"Создано вариантов: {created}. Пропущено: {skipped}"
+                    )
                 elif skipped > 0:
                     messages.warning(request, "Все варианты уже существуют")
                 else:

@@ -67,6 +67,7 @@ class ProductVariantDetailSerializer(serializers.ModelSerializer):
             "price",
             "options",
             "media",
+            "stock",
             "is_active",
             "created_at",
             "updated_at",

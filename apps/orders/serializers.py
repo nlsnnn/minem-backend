@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from django.db import transaction
 
 from .models import Order, OrderItem, OrderCustomer
-from apps.main.models import ProductVariant
+from .services import OrderCreationService
 
 
 class OrderCustomerSerializer(serializers.ModelSerializer):
@@ -75,11 +74,13 @@ class OrderItemCreateSerializer(serializers.ModelSerializer):
 
 class OrderCreateSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для создания заказа
+    Сериализатор для создания заказа с оплатой.
     """
 
     items = OrderItemCreateSerializer(many=True, write_only=True)
     customer_info = OrderCustomerSerializer(write_only=True)
+    payment_url = serializers.CharField(read_only=True)
+    return_url = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Order
@@ -88,52 +89,26 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             "status",
             "items",
             "customer_info",
+            "payment_url",
+            "return_url",
             "created_at",
             "updated_at",
         ]
+        read_only_fields = ["id", "status", "created_at", "updated_at"]
 
     def create(self, validated_data):
+        """
+        Создает заказ с платежом через сервис.
+        """
         items_data = validated_data.pop("items", [])
         customer_data = validated_data.pop("customer_info", {})
+        return_url = validated_data.pop("return_url", None)
 
-        with transaction.atomic():
-            variants = ProductVariant.objects.select_for_update().filter(
-                id__in=[item["product_variant"].id for item in items_data],
-                is_active=True,
-            )
-
-            total_amount = 0
-            for item in items_data:
-                requested_variant: ProductVariant = item["product_variant"]
-                requested_quantity = int(item.get("quantity", 1))
-
-                variant = next(
-                    (v for v in variants if v.id == requested_variant.id), None
-                )
-
-                if not variant:
-                    raise serializers.ValidationError(
-                        f"Вариант товара с ID {requested_variant.id} недоступен."
-                    )
-
-                if variant.stock < requested_quantity:
-                    raise serializers.ValidationError(
-                        f"Недостаточно товара для варианта с ID {requested_variant.id}."
-                    )
-
-                total_amount += variant.price * requested_quantity
-                item["price"] = variant.price
-                variant.stock -= requested_quantity
-                variant.save()
-
-            order = Order.objects.create(
-                total_amount=total_amount, status="awaiting_payment"
-            )
-
-            OrderCustomer.objects.create(order=order, **customer_data)
-
-            OrderItem.objects.bulk_create(
-                [OrderItem(order=order, **item) for item in items_data]
-            )
+        service = OrderCreationService()
+        order = service.create_order_with_payment(
+            items_data=items_data,
+            customer_data=customer_data,
+            return_url=return_url,
+        )
 
         return order

@@ -45,6 +45,7 @@ class YookassaProvider(PaymentProviderBase):
                     if return_url
                     else self._get_return_url(order_id),
                 },
+                "capture": True,
                 "description": f"Заказ №{order_id}",
                 # "statements": {
                 #     "type": "payment_overview",

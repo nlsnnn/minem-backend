@@ -6,7 +6,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "domen.com", "www.domen.com"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "domen.com",
+    "www.domen.com",
+    "qfcfyg-77-91-65-140.ru.tuna.am",
+]
 
 # Application definition
 DJANGO_APPS = [
@@ -177,3 +183,45 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@newssite.com")
+
+# Logging configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/app.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+        "payment_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/payments.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "apps.payment": {
+            "handlers": ["payment_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "apps.orders": {
+            "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

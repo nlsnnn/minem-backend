@@ -9,9 +9,8 @@ class Payment(models.Model):
 
     PAYMENT_STATUS_CHOICES = [
         ("pending", "В ожидании"),
-        ("completed", "Завершен"),
-        ("failed", "Неудачный"),
-        ("refunded", "Возвращен"),
+        ("succeeded", "Завершен"),
+        ("canceled", "Отменен"),
     ]
 
     order = models.ForeignKey(
@@ -22,7 +21,10 @@ class Payment(models.Model):
     )
     provider = models.CharField(max_length=100, verbose_name="Провайдер платежа")
     provider_payment_id = models.CharField(
-        max_length=100, verbose_name="ID платежа у провайдера"
+        max_length=100,
+        verbose_name="ID платежа у провайдера",
+        unique=True,
+        db_index=True,
     )
 
     amount = models.DecimalField(
@@ -41,6 +43,10 @@ class Payment(models.Model):
         verbose_name = "Платеж"
         verbose_name_plural = "Платежи"
         ordering = ["-payment_date"]
+        indexes = [
+            models.Index(fields=["-payment_date"]),
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self):
         return f"Платеж {self.id} - Заказ {self.order.id} - Сумма {self.amount}"
@@ -67,6 +73,15 @@ class PaymentEvent(models.Model):
         verbose_name = "Событие платежа"
         verbose_name_plural = "События платежей"
         ordering = ["-event_date"]
+        indexes = [
+            models.Index(fields=["payment", "event_type"]),
+            models.Index(fields=["-event_date"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["payment", "event_type"], name="unique_payment_event"
+            )
+        ]
 
     def __str__(self):
         return f"Событие {self.event_type} для Платежа {self.payment.id}"

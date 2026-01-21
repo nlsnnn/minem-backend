@@ -52,12 +52,19 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
 
     def variant_generator_link(self, obj):
         if obj.pk:
+            variants_count = obj.variants.count()
             url = reverse("admin:generate_variants", args=[obj.pk])
+            
+            button_text = "✨ Сгенерировать варианты" if variants_count == 0 else f"✨ Добавить варианты (есть {variants_count})"
+            button_color = "#28a745" if variants_count == 0 else "#417690"
+            
             return format_html(
                 '<a class="button" href="{}" style="padding: 10px 15px; '
-                "background: #417690; color: white; text-decoration: none; "
-                'border-radius: 4px;">Сгенерировать варианты</a>',
+                'background: {}; color: white; text-decoration: none; '
+                'border-radius: 4px; display: inline-block; font-weight: bold;">{}</a>',
                 url,
+                button_color,
+                button_text,
             )
         return "Сначала сохраните товар, чтобы сгенерировать варианты."
 
@@ -81,7 +88,7 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
             if form.is_valid():
                 created, skipped = generate_product_variants(
                     product=product,
-                    options=form.cleaned_data["options"],
+                    option_values=form.cleaned_data["option_values"],
                     base_price=form.cleaned_data["base_price"],
                     stock=form.cleaned_data["stock"],
                     is_active=form.cleaned_data["is_active"],
@@ -95,7 +102,7 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
                 elif skipped > 0:
                     messages.warning(request, "Все варианты уже существуют")
                 else:
-                    messages.error(request, "У выбранных опций нет значений")
+                    messages.error(request, "Невозможно создать варианты с выбранными значениями")
 
                 return redirect("admin:main_product_change", product.id)
         else:

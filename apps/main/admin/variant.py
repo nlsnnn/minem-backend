@@ -4,6 +4,7 @@ from django.utils.html import format_html
 from ..models import ProductVariant, VariantOptionValue, ProductMedia
 from .mixins import TimestampMixin, render_image_preview
 from .inlines import VariantOptionValueInline, ProductMediaInline
+from .filters import OptionValueFilter
 
 
 @admin.action(description="Массовое обновление цен")
@@ -85,12 +86,13 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
         "preview",
         "product",
         "sku",
+        "options_display",
         "price",
         "stock",
         "is_active",
         "created_at",
     )
-    list_filter = ("is_active", "product")
+    list_filter = ("is_active", "product", OptionValueFilter)
     search_fields = ("sku", "product__name")
     list_editable = ("price", "stock", "is_active")
     inlines = [VariantOptionValueInline, ProductMediaInline]
@@ -107,6 +109,23 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
         fields = list(super().get_readonly_fields(request, obj))
         fields.extend(["media_gallery", "sku_suggestion"])
         return fields
+
+    def options_display(self, obj):
+        """Красивое отображение опций варианта"""
+        option_values = obj.option_values.select_related(
+            "option_value__option"
+        ).all()
+        if option_values:
+            items = [
+                f'<span style="background: #e8f4f8; padding: 3px 8px; '
+                f'border-radius: 3px; margin: 2px; display: inline-block; '
+                f'font-size: 12px;">{ov.option_value.value}</span>'
+                for ov in option_values
+            ]
+            return format_html("".join(items))
+        return "—"
+
+    options_display.short_description = "Опции"
 
     def preview(self, obj):
         media = obj.media.filter(type="image").first()

@@ -1,26 +1,29 @@
 from itertools import product as itertools_product
+from collections import defaultdict
 from ..models import ProductVariant, VariantOptionValue, ProductMedia
 
 
 def generate_sku(product_slug, option_values):
     """Генерирует SKU по единому шаблону: slug-OPT1-OPT2"""
-    # chars = "aeiouy"
-
-    option_codes = "-".join(ov.value for ov in option_values)
-
+    option_codes = "-".join(sorted(ov.value for ov in option_values))
     return f"{product_slug}-{option_codes}".upper()
 
 
 def generate_product_variants(
-    product, options, base_price, stock, is_active, copy_media=False
+    product, option_values, base_price, stock, is_active, copy_media=False
 ):
-    option_values_map = {opt: list(opt.values.all()) for opt in options}
-    option_values_map = {k: v for k, v in option_values_map.items() if v}
+    """
+    Генерирует варианты товара из выбранных значений опций.
+    Группирует значения по опциям и создает все возможные комбинации.
+    """
+    options_map = defaultdict(list)
+    for ov in option_values:
+        options_map[ov.option].append(ov)
 
-    if not option_values_map:
+    if len(options_map) < 1:
         return 0, 0
 
-    combinations = list(itertools_product(*option_values_map.values()))
+    combinations = list(itertools_product(*options_map.values()))
     created_count = 0
     skipped_count = 0
     product_media = (

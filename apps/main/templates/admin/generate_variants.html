@@ -1,59 +1,456 @@
-{% extends "admin/base_site.html" %} {% block content %}
+{% extends "admin/base_site.html" %} 
+{% block extrastyle %}
+<style>
+  .variant-generator {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
 
-<div class="module">
+  .info-box {
+    background: #e8f4f8;
+    border-left: 4px solid #417690;
+    padding: 15px;
+    margin-bottom: 25px;
+    border-radius: 4px;
+  }
+
+  .info-box h3 {
+    margin-top: 0;
+    color: #417690;
+  }
+
+  .info-box ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+
+  .form-section {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
+
+  .form-section h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 16px;
+    border-bottom: 2px solid #417690;
+    padding-bottom: 10px;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .option-group {
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    border-radius: 4px;
+    background: #fafafa;
+  }
+
+  .option-group-title {
+    font-weight: bold;
+    color: #417690;
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .select-all-btn {
+    font-size: 11px;
+    color: #417690;
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: normal;
+  }
+
+  .select-all-btn:hover {
+    color: #2e5a6e;
+  }
+
+  .option-group label {
+    display: block;
+    margin: 5px 0;
+    font-weight: normal;
+  }
+
+  .option-group input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  .form-row {
+    margin-bottom: 20px;
+  }
+
+  .form-row label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  .form-row input[type="number"],
+  .form-row input[type="text"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 300px;
+    max-width: 100%;
+  }
+
+  .form-row .helptext {
+    display: block;
+    color: #666;
+    font-size: 13px;
+    margin-top: 5px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    margin-right: 8px;
+  }
+
+  .checkbox-row label {
+    font-weight: bold;
+    margin: 0;
+  }
+
+  .submit-row {
+    background: #f8f8f8;
+    padding: 15px 25px;
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+  }
+
+  .submit-row input[type="submit"] {
+    background: #417690;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .submit-row input[type="submit"]:hover {
+    background: #2e5a6e;
+  }
+
+  .submit-row .cancel {
+    background: #999;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-left: 10px;
+    display: inline-block;
+  }
+
+  .submit-row .cancel:hover {
+    background: #777;
+  }
+
+  .errorlist {
+    background: #ffebe8;
+    border-left: 4px solid #ba2121;
+    padding: 10px;
+    margin-bottom: 15px;
+    list-style: none;
+    color: #ba2121;
+  }
+
+  .example-box {
+    background: #fff9e6;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 4px;
+  }
+
+  .example-box strong {
+    color: #ff8f00;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="variant-generator">
+  <h1>{{ title }}</h1>
+
+  <div class="info-box">
+    <h3>📦 Как работает генератор вариантов?</h3>
+    <ul>
+      <li>Выберите конкретные значения опций (например: Красный, Синий из "Цвет"; S, M, L из "Размер")</li>
+      <li>Система создаст все возможные комбинации выбранных значений</li>
+      <li>Каждому варианту будет присвоена одинаковая цена и остаток</li>
+      <li>Артикул генерируется автоматически на основе названия товара и опций</li>
+    </ul>
+  </div>
+
   <form method="post">
     {% csrf_token %}
 
-    <div class="form-row">
-      {{ form.options.errors }}
-      <label>{{ form.options.label }}:</label>
-      <span class="helptext">{{ form.options.help_text }}</span>
-      <div style="margin-left: 20px">{{ form.options }}</div>
+    <div class="form-section">
+      <h3>1️⃣ Выберите значения опций для генерации</h3>
+      
+      {% if form.option_values.errors %}
+      <ul class="errorlist">
+        {% for error in form.option_values.errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <p class="helptext">{{ form.option_values.help_text }}</p>
+
+      <div class="options-grid" id="options-grid">
+        <!-- JavaScript заполнит опции сгруппированными, либо будут показаны обычные чекбоксы -->
+        <div id="fallback-options" style="padding: 10px;">
+          {{ form.option_values }}
+        </div>
+      </div>
+
+      <div class="example-box">
+        <strong>Пример:</strong> Если выбрать "Красный, Синий" (Цвет) и "S, M, L" (Размер), 
+        будет создано 6 вариантов: Красный-S, Красный-M, Красный-L, Синий-S, Синий-M, Синий-L
+      </div>
     </div>
 
-    <div class="form-row">
-      {{ form.base_price.errors }}
-      <label for="id_base_price">{{ form.base_price.label }}:</label>
-      {{ form.base_price }}
-      <span class="helptext">{{ form.base_price.help_text }}</span>
-    </div>
+    <div class="form-section">
+      <h3>2️⃣ Укажите параметры вариантов</h3>
 
-    <div class="form-row">
-      {{ form.stock.errors }}
-      <label for="id_stock">{{ form.stock.label }}:</label>
-      {{ form.stock }}
-      <span class="helptext">{{ form.stock.help_text }}</span>
-    </div>
+      <div class="form-row">
+        {% if form.base_price.errors %}
+        <ul class="errorlist">
+          {% for error in form.base_price.errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <label for="id_base_price">{{ form.base_price.label }}:</label>
+        {{ form.base_price }}
+        <span class="helptext">{{ form.base_price.help_text }}</span>
+      </div>
 
-    <div class="form-row">
-      <label> {{ form.is_active }} {{ form.is_active.label }} </label>
-    </div>
+      <div class="form-row">
+        {% if form.stock.errors %}
+        <ul class="errorlist">
+          {% for error in form.stock.errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <label for="id_stock">{{ form.stock.label }}:</label>
+        {{ form.stock }}
+        <span class="helptext">{{ form.stock.help_text }}</span>
+      </div>
 
-    <div class="form-row">
-      <label>
-        {{ form.copy_product_media }} {{ form.copy_product_media.label }}
-      </label>
-      <span class="helptext">{{ form.copy_product_media.help_text }}</span>
+      <div class="checkbox-row">
+        {{ form.is_active }}
+        <label for="id_is_active">{{ form.is_active.label }}</label>
+      </div>
+
+      <div class="checkbox-row">
+        {{ form.copy_product_media }}
+        <label for="id_copy_product_media">{{ form.copy_product_media.label }}</label>
+        <span class="helptext" style="margin-left: 8px;">{{ form.copy_product_media.help_text }}</span>
+      </div>
     </div>
 
     <div class="submit-row">
-      <input type="submit" value="Сгенерировать варианты" class="default" />
-      <a
-        href="{% url 'admin:main_product_change' product.id %}"
-        class="button cancel"
-        >Отмена</a
-      >
+      <input type="submit" value="✨ Сгенерировать варианты" class="default" />
+      <a href="{% url 'admin:main_product_change' product.id %}" class="cancel">Отмена</a>
     </div>
   </form>
 </div>
 
-<div class="module" style="margin-top: 30px">
-  <h2>Примечание</h2>
-  <ul>
-    <li>Выберите опции (например, "Цвет" и "Размер")</li>
-    <li>Система создаст все комбинации (3 цвета × 4 размера = 12 вариантов)</li>
-    <li>Артикул генерируется автоматически (например, "T-SHIRT-RED-M")</li>
-    <li>Цена и остаток применяются ко всем вариантам</li>
-  </ul>
-</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const fallbackContainer = document.getElementById('fallback-options');
+    const grid = document.getElementById('options-grid');
+    const checkboxes = fallbackContainer.querySelectorAll('input[type="checkbox"]');
+    
+    console.log('Found checkboxes:', checkboxes.length);
+    
+    if (checkboxes.length === 0) {
+      grid.innerHTML = '<div style="padding: 20px; background: #fff3cd; border-radius: 4px;"><strong>⚠️ Внимание:</strong> Сначала создайте опции и их значения в разделе "Опции товара"</div>';
+      return;
+    }
+    
+    // Группируем чекбоксы по опциям
+    const optionGroups = {};
+    
+    checkboxes.forEach(checkbox => {
+      const label = checkbox.parentElement;
+      if (!label) return;
+      
+      const text = label.textContent.trim();
+      console.log('Processing checkbox label:', text);
+      const match = text.match(/^(.+?)\s*-\s*(.+)$/);
+      
+      if (match) {
+        const [, optionName, valueName] = match;
+        
+        if (!optionGroups[optionName]) {
+          optionGroups[optionName] = [];
+        }
+        
+        optionGroups[optionName].push({
+          checkbox: checkbox,
+          value: valueName,
+          label: label
+        });
+      }
+    });
+    
+    console.log('Option groups:', Object.keys(optionGroups));
+    
+    // Если не смогли распарсить, оставляем как есть
+    if (Object.keys(optionGroups).length === 0) {
+      console.log('Could not parse options, keeping fallback');
+      return;
+    }
+    
+    // Создаем красивые группы
+    const newGrid = document.createElement('div');
+    newGrid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;';
+    
+    Object.keys(optionGroups).sort().forEach(optionName => {
+      const group = document.createElement('div');
+      group.className = 'option-group';
+      
+      const title = document.createElement('div');
+      title.className = 'option-group-title';
+      
+      const titleText = document.createElement('span');
+      titleText.textContent = optionName;
+      title.appendChild(titleText);
+      
+      const selectAllBtn = document.createElement('span');
+      selectAllBtn.className = 'select-all-btn';
+      selectAllBtn.textContent = 'выбрать все';
+      selectAllBtn.onclick = function() {
+        const groupCheckboxes = group.querySelectorAll('input[type="checkbox"]');
+        const allChecked = Array.from(groupCheckboxes).every(cb => cb.checked);
+        groupCheckboxes.forEach(cb => {
+          cb.checked = !allChecked;
+          const originalId = cb.getAttribute('data-original-id');
+          if (originalId) {
+            const original = document.getElementById(originalId);
+            if (original) original.checked = cb.checked;
+          }
+          cb.dispatchEvent(new Event('change'));
+        });
+        selectAllBtn.textContent = allChecked ? 'выбрать все' : 'снять все';
+      };
+      title.appendChild(selectAllBtn);
+      
+      group.appendChild(title);
+      
+      optionGroups[optionName].forEach(item => {
+        const wrapper = document.createElement('label');
+        const newCheckbox = item.checkbox.cloneNode(true);
+        newCheckbox.setAttribute('data-original-id', item.checkbox.id);
+        wrapper.appendChild(newCheckbox);
+        wrapper.appendChild(document.createTextNode(' ' + item.value));
+        group.appendChild(wrapper);
+      });
+      
+      newGrid.appendChild(group);
+    });
+    
+    grid.insertBefore(newGrid, fallbackContainer);
+    
+    // Скрываем оригинальный контейнер
+    fallbackContainer.style.display = 'none';
+    
+    // Синхронизируем клики и обновляем счетчик
+    const newCheckboxes = newGrid.querySelectorAll('input[type="checkbox"]');
+    newCheckboxes.forEach((newCheckbox, index) => {
+      const originalCheckbox = Array.from(checkboxes)[index];
+      if (originalCheckbox) {
+        newCheckbox.checked = originalCheckbox.checked;
+        newCheckbox.addEventListener('change', function() {
+          originalCheckbox.checked = this.checked;
+          updateVariantCount();
+        });
+      }
+    });
+    
+    // Функция подсчета вариантов
+    function updateVariantCount() {
+      const selectedByOption = {};
+      
+      newCheckboxes.forEach((cb) => {
+        if (cb.checked) {
+          const label = cb.parentElement;
+          const optionGroup = label.closest('.option-group');
+          if (!optionGroup) return;
+          
+          const titleSpan = optionGroup.querySelector('.option-group-title span');
+          if (!titleSpan) return;
+          
+          const optionName = titleSpan.textContent;
+          
+          if (!selectedByOption[optionName]) {
+            selectedByOption[optionName] = 0;
+          }
+          selectedByOption[optionName]++;
+        }
+      });
+      
+      const optionNames = Object.keys(selectedByOption);
+      let totalVariants = 0;
+      let formula = '';
+      
+      if (optionNames.length > 0) {
+        totalVariants = Object.values(selectedByOption).reduce((a, b) => a * b, 1);
+        formula = Object.values(selectedByOption).join(' × ');
+      }
+      
+      // Обновляем или создаем счетчик
+      let counter = document.getElementById('variant-counter');
+      if (!counter) {
+        counter = document.createElement('div');
+        counter.id = 'variant-counter';
+        counter.style.cssText = 'background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-top: 15px; border-radius: 4px; font-size: 16px;';
+        const exampleBox = document.querySelector('.example-box');
+        if (exampleBox) {
+          exampleBox.parentNode.insertBefore(counter, exampleBox);
+        }
+      }
+      
+      if (totalVariants > 0) {
+        counter.innerHTML = `
+          <strong style="color: #ff8f00;">📊 Будет создано вариантов:</strong> 
+          <span style="font-size: 20px; font-weight: bold; color: #28a745;">${totalVariants}</span>
+          ${formula ? `<span style="color: #666;"> (${formula})</span>` : ''}
+        `;
+        counter.style.display = 'block';
+      } else {
+        counter.style.display = 'none';
+      }
+    }
+    
+    // Начальный подсчет
+    updateVariantCount();
+  });
+</script>
 {% endblock %}

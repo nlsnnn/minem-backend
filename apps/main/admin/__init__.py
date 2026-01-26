@@ -1,16 +1,15 @@
-from .product import CategoryAdmin, ProductAdmin, ProductCategoryAdmin
-from .variant import ProductVariantAdmin, VariantOptionValueAdmin
-from .option import OptionAdmin, OptionValueAdmin
-from .media import ProductContentAdmin, ProductMediaAdmin
+from .color import ColorAdmin
+from .size import SizeAdmin
+from .product import CategoryAdmin, ProductAdmin, ProductGroupAdmin
+from .variant import ProductVariantAdmin
+from .media import ProductMediaAdmin
 
 __all__ = [
+    "ColorAdmin",
+    "SizeAdmin",
     "CategoryAdmin",
     "ProductAdmin",
-    "ProductCategoryAdmin",
+    "ProductGroupAdmin",
     "ProductVariantAdmin",
-    "VariantOptionValueAdmin",
-    "OptionAdmin",
-    "OptionValueAdmin",
-    "ProductContentAdmin",
     "ProductMediaAdmin",
 ]

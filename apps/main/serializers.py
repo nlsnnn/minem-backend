@@ -3,9 +3,17 @@ from django.utils.text import slugify
 
 from .models import (
     Category,
+    Color,
+    ProductGroup,
     Product,
     ProductVariant,
 )
+
+
+class ColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = ["id", "name", "slug"]
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -18,85 +26,31 @@ class CategorySerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class ProductListSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    prices = serializers.SerializerMethodField()
-    media = serializers.SerializerMethodField()
-
+class ProductGroupBriefSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
-        fields = [
-            "id",
-            "name",
-            "slug",
-            "excerpt",
-            "categories",
-            "prices",
-            "media",
-        ]
-
-    def get_prices(self, obj: Product):
-        variants = obj.variants.filter(is_active=True)
-        if not variants.exists():
-            return None
-
-        prices = set(variants.values_list("price", flat=True))
-        return prices
-
-    def get_media(self, obj: Product):
-        media_qs = obj.media.filter().order_by("position").all()
-        main_media = media_qs.filter(is_main=True).first()
-        media = (
-            [main_media] + [m for m in media_qs if m != main_media]
-            if main_media
-            else media_qs
-        )
-
-        return [m.url for m in media]
+        model = ProductGroup
+        fields = ["id", "name", "slug"]
 
 
-class ProductVariantDetailSerializer(serializers.ModelSerializer):
-    media = serializers.SerializerMethodField()
-    options = serializers.SerializerMethodField()
+class ProductVariantSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+    size = serializers.CharField(source="size.name")
 
     class Meta:
         model = ProductVariant
-        fields = [
-            "id",
-            "sku",
-            "price",
-            "options",
-            "media",
-            "stock",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
+        fields = ["id", "size", "sku", "price", "stock", "is_active"]
 
-    def get_options(self, obj):
-        option_values = obj.option_values.select_related("option_value").all()
-        return {
-            ov.option_value.option.name: ov.option_value.value for ov in option_values
-        }
-
-    def get_media(self, obj):
-        media_qs = (
-            obj.product.media.filter(variant_id=obj.id).order_by("position").all()
-        )
-        main_media = media_qs.filter(is_main=True).first()
-        media = (
-            [main_media] + [m for m in media_qs if m != main_media]
-            if main_media
-            else media_qs
-        )
-
-        return [m.url for m in media]
+    def get_price(self, obj):
+        return obj.get_price()
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(many=True, read_only=True)
-    media = serializers.SerializerMethodField()
-    variants = serializers.SerializerMethodField()
+class ProductListSerializer(serializers.ModelSerializer):
+    group = ProductGroupBriefSerializer(read_only=True)
+    color = ColorSerializer(read_only=True)
+    main_image = serializers.SerializerMethodField()
+    available_sizes = serializers.SerializerMethodField()
+    in_stock = serializers.SerializerMethodField()
+    excerpt = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -104,25 +58,112 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "slug",
+            "group",
+            "color",
+            "price",
+            "main_image",
+            "available_sizes",
+            "in_stock",
             "excerpt",
-            "description",
-            "categories",
-            "media",
-            "variants",
         ]
 
-    def get_media(self, obj: Product):
-        media_qs = obj.media.filter().order_by("position").all()
-        main_media = media_qs.filter(is_main=True).first()
-        media = (
-            [main_media] + [m for m in media_qs if m != main_media]
-            if main_media
-            else media_qs
+    def get_main_image(self, obj):
+        main_media = obj.media.filter(is_main=True).first()
+        if not main_media:
+            main_media = obj.media.first()
+        return main_media.url if main_media else None
+
+    def get_available_sizes(self, obj):
+        return list(
+            obj.variants.filter(is_active=True, stock__gt=0)
+            .select_related("size")
+            .values_list("size__name", flat=True)
+            .distinct()
         )
 
-        return [m.url for m in media]
+    def get_in_stock(self, obj):
+        return obj.variants.filter(is_active=True, stock__gt=0).exists()
 
-    def get_variants(self, obj: Product):
-        variants = obj.variants.filter(is_active=True)
-        serializer = ProductVariantDetailSerializer(variants, many=True)
-        return serializer.data
+    def get_excerpt(self, obj):
+        return obj.group.excerpt if obj.group else ""
+
+
+class RelatedColorSerializer(serializers.ModelSerializer):
+    color = ColorSerializer(read_only=True)
+    main_image = serializers.SerializerMethodField()
+    in_stock = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ["id", "name", "slug", "color", "price", "main_image", "in_stock"]
+
+    def get_main_image(self, obj):
+        main_media = obj.media.filter(is_main=True).first()
+        if not main_media:
+            main_media = obj.media.first()
+        return main_media.url if main_media else None
+
+    def get_in_stock(self, obj):
+        return obj.variants.filter(is_active=True, stock__gt=0).exists()
+
+
+class ProductDetailSerializer(serializers.ModelSerializer):
+    group = serializers.SerializerMethodField()
+    color = ColorSerializer(read_only=True)
+    media = serializers.SerializerMethodField()
+    variants = ProductVariantSerializer(many=True, read_only=True)
+    related_colors = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "group",
+            "color",
+            "price",
+            "media",
+            "variants",
+            "related_colors",
+            "categories",
+        ]
+
+    def get_group(self, obj):
+        if not obj.group:
+            return None
+        return {
+            "id": obj.group.id,
+            "name": obj.group.name,
+            "slug": obj.group.slug,
+            "description": obj.group.description,
+            "excerpt": obj.group.excerpt,
+            "materials": obj.group.materials,
+            "care_instructions": obj.group.care_instructions,
+            "size_chart": obj.group.size_chart,
+            "delivery_info": obj.group.delivery_info,
+        }
+
+    def get_media(self, obj):
+        media_qs = obj.media.all().order_by("position")
+        return [
+            {"url": m.url, "type": m.type, "position": m.position} for m in media_qs
+        ]
+
+    def get_related_colors(self, obj):
+        if not obj.group:
+            return []
+        related_products = (
+            obj.group.products.exclude(id=obj.id)
+            .filter(is_active=True)
+            .select_related("color")
+            .prefetch_related("media", "variants")
+        )
+        return RelatedColorSerializer(related_products, many=True).data
+
+    def get_categories(self, obj):
+        if not obj.group:
+            return []
+        categories = obj.group.categories.filter(is_active=True)
+        return CategorySerializer(categories, many=True).data

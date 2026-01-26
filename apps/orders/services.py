@@ -109,14 +109,15 @@ class OrderCreationService:
                     }
                 )
 
-            item_total = variant.price * requested_quantity
+            variant_price = variant.get_price()
+            item_total = variant_price * requested_quantity
             total_amount += item_total
 
             validated_items.append(
                 {
                     "product_variant": variant,
                     "quantity": requested_quantity,
-                    "price": variant.price,
+                    "price": variant_price,
                 }
             )
 

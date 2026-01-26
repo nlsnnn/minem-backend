@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.shortcuts import render
 from django.utils.html import format_html
-from ..models import ProductVariant, VariantOptionValue, ProductMedia
+from ..models import ProductVariant, ProductMedia
 from .mixins import TimestampMixin, render_image_preview
-from .inlines import VariantOptionValueInline, ProductMediaInline
-from .filters import OptionValueFilter
+from .inlines import ProductMediaInline
 
 
 @admin.action(description="Массовое обновление цен")
@@ -54,16 +53,12 @@ def duplicate_variant(modeladmin, request, queryset):
         new_sku = f"{variant.sku}-COPY-{variant.id}"
         new_variant = ProductVariant.objects.create(
             product=variant.product,
+            size=variant.size,
             sku=new_sku,
             price=variant.price,
             stock=0,
             is_active=False,
         )
-
-        for option_value in variant.option_values.all():
-            VariantOptionValue.objects.create(
-                variant=new_variant, option_value=option_value.option_value
-            )
 
         for media in variant.media.all():
             ProductMedia.objects.create(
@@ -85,47 +80,41 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = (
         "preview",
         "product",
+        "size",
         "sku",
-        "options_display",
-        "price",
+        "price_display",
         "stock",
         "is_active",
         "created_at",
     )
-    list_filter = ("is_active", "product", OptionValueFilter)
-    search_fields = ("sku", "product__name")
-    list_editable = ("price", "stock", "is_active")
-    inlines = [VariantOptionValueInline, ProductMediaInline]
+    list_filter = ("is_active", "product", "size")
+    search_fields = ("sku", "product__name", "size")
+    list_editable = ("stock", "is_active")
+    inlines = [ProductMediaInline]
     actions = [bulk_update_price, bulk_update_stock, duplicate_variant]
+    autocomplete_fields = ["product"]
 
     fieldsets = (
-        (None, {"fields": ("product", "sku", "sku_suggestion", "is_active")}),
-        ("Цена", {"fields": ("price", "stock")}),
+        (None, {"fields": ("product", "size", "sku", "price", "stock", "is_active")}),
         ("Медиа", {"fields": ("media_gallery",)}),
         ("Даты", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
     def get_readonly_fields(self, request, obj=None):
         fields = list(super().get_readonly_fields(request, obj))
-        fields.extend(["media_gallery", "sku_suggestion"])
+        fields.extend(["media_gallery", "sku"])
         return fields
 
-    def options_display(self, obj):
-        """Красивое отображение опций варианта"""
-        option_values = obj.option_values.select_related(
-            "option_value__option"
-        ).all()
-        if option_values:
-            items = [
-                f'<span style="background: #e8f4f8; padding: 3px 8px; '
-                f'border-radius: 3px; margin: 2px; display: inline-block; '
-                f'font-size: 12px;">{ov.option_value.value}</span>'
-                for ov in option_values
-            ]
-            return format_html("".join(items))
-        return "—"
+    def price_display(self, obj):
+        """Отображение цены с учетом наследования от товара"""
+        price = obj.get_price()
+        if obj.price is None:
+            return format_html(
+                '<span style="color: #666;">{} ₽ (из товара)</span>', price
+            )
+        return f"{price} ₽"
 
-    options_display.short_description = "Опции"
+    price_display.short_description = "Цена"
 
     def preview(self, obj):
         media = obj.media.filter(type="image").first()
@@ -142,25 +131,6 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
         return "—"
 
     preview.short_description = "Изображение"
-
-    def sku_suggestion(self, obj):
-        if obj.pk and obj.product:
-            option_values = obj.option_values.select_related(
-                "option_value__option"
-            ).all()
-            if option_values:
-                codes = "-".join(
-                    ov.option_value.value[:3].upper() for ov in option_values
-                )
-                suggestion = f"{obj.product.slug}-{codes}"
-                return format_html(
-                    '<code style="background: #f0f0f0; padding: 5px 10px; '
-                    'border-radius: 4px;">{}</code>',
-                    suggestion,
-                )
-        return "Автоматически сгенерированное предложение SKU на основе опций."
-
-    sku_suggestion.short_description = "Предложение SKU"
 
     def media_gallery(self, obj):
         media_items = obj.media.all().order_by("position")
@@ -194,10 +164,3 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
         )
 
     media_gallery.short_description = "Медиа галерея"
-
-
-@admin.register(VariantOptionValue)
-class VariantOptionValueAdmin(admin.ModelAdmin):
-    list_display = ("variant", "option_value")
-    list_filter = ("option_value__option",)
-    search_fields = ("variant__sku", "option_value__value")

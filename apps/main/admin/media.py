@@ -1,14 +1,6 @@
 from django.contrib import admin
-from ..models import ProductContent, ProductMedia
+from ..models import ProductMedia
 from .mixins import render_media_preview
-
-
-@admin.register(ProductContent)
-class ProductContentAdmin(admin.ModelAdmin):
-    list_display = ("product", "type", "title", "position")
-    list_filter = ("type", "product")
-    search_fields = ("title", "content", "product__name")
-    list_editable = ("position",)
 
 
 @admin.register(ProductMedia)

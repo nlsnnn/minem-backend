@@ -101,6 +101,11 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         Создает заказ с платежом через сервис.
         """
         items_data = validated_data.pop("items", [])
+        if len(items_data) == 0:
+            raise serializers.ValidationError(
+                {"items": "Список товаров не может быть пустым."}
+            )
+
         customer_data = validated_data.pop("customer_info", {})
         return_url = validated_data.pop("return_url", None)
 

@@ -11,7 +11,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "domen.com",
     "www.domen.com",
-    "qfcfyg-77-91-65-140.ru.tuna.am",
+    "2t6cc8-77-91-65-140.ru.tuna.am",
 ]
 
 # Application definition

@@ -75,7 +75,6 @@ def duplicate_variant(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Дублировано вариантов: {count}")
 
 
-@admin.register(ProductVariant)
 class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = (
         "preview",

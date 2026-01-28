@@ -29,7 +29,7 @@ class Color(models.Model):
 
     class Meta:
         db_table = "colors"
-        verbose_name = "Цвет"
+        verbose_name = "Цвет (справочник)"
         verbose_name_plural = "Цвета"
         ordering = ["position", "name"]
 
@@ -64,7 +64,7 @@ class Category(models.Model):
 
     class Meta:
         db_table = "categories"
-        verbose_name = "Категория"
+        verbose_name = "Категория товаров"
         verbose_name_plural = "Категории"
         ordering = ["name"]
 
@@ -97,7 +97,7 @@ class Size(models.Model):
 
     class Meta:
         db_table = "sizes"
-        verbose_name = "Размер"
+        verbose_name = "Размер (справочник)"
         verbose_name_plural = "Размеры"
         ordering = ["position", "name"]
 
@@ -162,8 +162,8 @@ class ProductGroup(models.Model):
 
     class Meta:
         db_table = "product_groups"
-        verbose_name = "Группа товаров"
-        verbose_name_plural = "Группы товаров"
+        verbose_name = "Базовый товар (без цвета)"
+        verbose_name_plural = "Базовые товары"
         ordering = ["name"]
 
     def __str__(self):
@@ -248,8 +248,8 @@ class Product(models.Model):
 
     class Meta:
         db_table = "products"
-        verbose_name = "Товар"
-        verbose_name_plural = "Товары"
+        verbose_name = "Товар в продаже (с цветом)"
+        verbose_name_plural = "Товары в продаже"
         ordering = ["name"]
         unique_together = ("group", "color")
         indexes = [
@@ -315,8 +315,8 @@ class ProductVariant(models.Model):
 
     class Meta:
         db_table = "product_variants"
-        verbose_name = "Вариант товара"
-        verbose_name_plural = "Варианты товара"
+        verbose_name = "Размер и остаток"
+        verbose_name_plural = "Размеры и остатки"
         ordering = ["size"]
         unique_together = ("product", "size")
         indexes = [
@@ -367,8 +367,8 @@ class ProductMedia(models.Model):
 
     class Meta:
         db_table = "product_media"
-        verbose_name = "Медиа товара"
-        verbose_name_plural = "Медиа товара"
+        verbose_name = "Фотография товара"
+        verbose_name_plural = "Фотографии и медиа"
         ordering = ["-uploaded_at"]
 
     def __str__(self):

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 from django.db import transaction
 from rest_framework import serializers
 
-from .models import Order, OrderItem, OrderCustomer
+from .models import Order, OrderItem, OrderCustomer, StockHistory
 from apps.main.models import ProductVariant
 from apps.payment.models import Payment
 from apps.payment.provider import PaymentProviderBase, YookassaProvider
@@ -127,6 +127,7 @@ class OrderCreationService:
         self, order: Order, validated_items: List[Dict]
     ) -> None:
         order_items = []
+        stock_history_records = []
 
         for item_data in validated_items:
             variant = item_data["product_variant"]
@@ -135,12 +136,29 @@ class OrderCreationService:
             # Создаем позицию заказа
             order_items.append(OrderItem(order=order, **item_data))
 
+            # Сохраняем текущий остаток
+            stock_before = variant.stock
+
             # Уменьшаем запас
             variant.stock -= quantity
             variant.save(update_fields=["stock"])
 
+            # Создаем запись в истории остатков
+            stock_history_records.append(
+                StockHistory(
+                    product_variant=variant,
+                    order=order,
+                    action="order_created",
+                    quantity_change=-quantity,
+                    stock_before=stock_before,
+                    stock_after=variant.stock,
+                    note=f"Резерв при создании заказа {str(order.id)[:8]}",
+                )
+            )
+
         # Создаем все позиции одним запросом
         OrderItem.objects.bulk_create(order_items)
+        StockHistory.objects.bulk_create(stock_history_records)
 
     def _create_payment(
         self,

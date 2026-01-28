@@ -40,7 +40,7 @@ class Payment(models.Model):
 
     class Meta:
         db_table = "payments"
-        verbose_name = "Платеж"
+        verbose_name = "Платеж клиента"
         verbose_name_plural = "Платежи"
         ordering = ["-payment_date"]
         indexes = [

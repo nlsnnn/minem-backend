@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from ..models import Category, Product, ProductGroup
 from .mixins import TimestampMixin
 from .inlines import (
     ProductGroupCategoryInline,
@@ -9,7 +8,6 @@ from .inlines import (
 )
 
 
-@admin.register(Category)
 class CategoryAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "is_active", "created_at")
     list_filter = ("is_active",)
@@ -18,7 +16,6 @@ class CategoryAdmin(TimestampMixin, admin.ModelAdmin):
     list_editable = ("is_active",)
 
 
-@admin.register(Product)
 class ProductAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = ("name", "group", "color", "price", "is_active", "created_at")
     list_filter = ("is_active", "group", "color")
@@ -36,20 +33,27 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
             "Основная информация",
             {
                 "fields": ("group", "color", "name", "slug", "price"),
-                "description": "Укажите базовый товар, цвет и уникальное название для этого цвета.",
+                "description": (
+                    "<strong>Создание товара:</strong><br>"
+                    "1. Сначала выберите <strong>базовый товар</strong> (если нужного нет - создайте в разделе 'Базовые товары')<br>"
+                    "2. Выберите <strong>цвет</strong> (если нужного нет - создайте в разделе 'Цвета')<br>"
+                    "3. Укажите <strong>полное название</strong> с цветом, например: 'HOODIE Basic черный'<br>"
+                    "4. URL сгенерируется автоматически из названия<br>"
+                    "5. Укажите цену (одинаковую для всех размеров этого цвета)"
+                ),
             },
         ),
         (
             "Публикация",
             {
                 "fields": ("is_active",),
+                "description": "Поставьте галочку чтобы товар появился на сайте. После сохранения добавьте размеры ниже.",
             },
         ),
         ("Даты", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
 
-@admin.register(ProductGroup)
 class ProductGroupAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = ("name", "slug", "products_count", "is_active", "created_at")
     list_filter = ("is_active",)
@@ -65,14 +69,22 @@ class ProductGroupAdmin(TimestampMixin, admin.ModelAdmin):
             "Название",
             {
                 "fields": ("name", "slug", "is_active"),
-                "description": "Название товара без учета цвета. Например: PUFFER JACKET gen 2",
+                "description": (
+                    "<strong>Базовый товар</strong> - это товар без учета цвета.<br>"
+                    "Например: 'PUFFER JACKET gen 2' или 'HOODIE Basic'<br><br>"
+                    "Один базовый товар может иметь несколько цветов.<br>"
+                    "URL сгенерируется автоматически из названия."
+                ),
             },
         ),
         (
             "Описание для покупателей",
             {
                 "fields": ("excerpt", "description"),
-                "description": "Краткое и полное описание товара",
+                "description": (
+                    "<strong>Краткое описание</strong> показывается в каталоге<br>"
+                    "<strong>Полное описание</strong> показывается на странице товара"
+                ),
             },
         ),
         (
@@ -84,7 +96,13 @@ class ProductGroupAdmin(TimestampMixin, admin.ModelAdmin):
                     "size_chart",
                     "delivery_info",
                 ),
-                "description": "Техническая информация о товаре",
+                "description": (
+                    "Техническая информация о товаре:<br>"
+                    "• <strong>Состав</strong>: материалы изделия<br>"
+                    "• <strong>Уход</strong>: рекомендации по стирке<br>"
+                    "• <strong>Размерная сетка</strong>: таблица размеров<br>"
+                    "• <strong>Доставка</strong>: информация о сроках"
+                ),
             },
         ),
         ("Даты", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),

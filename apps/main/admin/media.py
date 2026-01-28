@@ -1,9 +1,7 @@
 from django.contrib import admin
-from ..models import ProductMedia
 from .mixins import render_media_preview
 
 
-@admin.register(ProductMedia)
 class ProductMediaAdmin(admin.ModelAdmin):
     list_display = (
         "preview",

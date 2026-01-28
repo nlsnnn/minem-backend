@@ -1,8 +1,6 @@
 from django.contrib import admin
-from ..models import Size
 
 
-@admin.register(Size)
 class SizeAdmin(admin.ModelAdmin):
     list_display = ("name", "position", "is_active")
     list_filter = ("is_active",)

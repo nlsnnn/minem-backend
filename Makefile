@@ -34,6 +34,19 @@ docker-createsuperuser:
 docker-collectstatic:
 	docker-compose exec web python manage.py collectstatic --noinput
 
+# Order management
+cancel-expired-orders:
+	python manage.py cancel_expired_orders --hours=2
+
+cancel-expired-orders-dry:
+	python manage.py cancel_expired_orders --hours=2 --dry-run
+
+docker-cancel-expired:
+	docker-compose exec web python manage.py cancel_expired_orders --hours=2
+
+docker-cancel-expired-dry:
+	docker-compose exec web python manage.py cancel_expired_orders --hours=2 --dry-run
+
 # Docker Development
 dev-build:
 	docker-compose -f docker-compose.dev.yml build

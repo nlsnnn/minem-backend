@@ -65,6 +65,32 @@ services:
     networks:
       - minem_network
 
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: minem_cron
+    restart: unless-stopped
+    command: >
+      sh -c "echo '*/30 * * * * cd /app && python manage.py cancel_expired_orders --hours=2 >> /app/logs/cron.log 2>&1' > /etc/crontabs/django &&
+             crond -f -l 2"
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=${DB_NAME:-minem_db}
+      - DB_USER=${DB_USER:-minem_user}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - minem_network
+
   nginx:
     image: nginx:alpine
     container_name: minem_nginx

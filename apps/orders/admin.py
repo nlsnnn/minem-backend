@@ -185,6 +185,9 @@ class OrderAdmin(admin.ModelAdmin):
 
     mark_as_canceled.short_description = "Отметить как Отменен"
 
+    def has_add_permission(self, request):
+        return False
+
 
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("order_short_id", "product_info", "quantity", "price", "total")

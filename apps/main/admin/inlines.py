@@ -1,11 +1,16 @@
+import logging
+
 from django.contrib import admin
 from django.forms import BaseInlineFormSet
 from django.db import models
+from apps.storage import StorageService
 from ..models import (
     ProductGroupCategory,
     ProductMedia,
     ProductVariant,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProductGroupCategoryInline(admin.TabularInline):
@@ -63,14 +68,38 @@ class ProductMediaInline(admin.TabularInline):
     model = ProductMedia
     formset = ProductMediaFormSet
     extra = 1
-    fields = ("preview", "type", "url", "variant", "position", "is_main")
+    fields = ("preview", "file_upload", "type", "url", "variant", "position", "is_main")
     readonly_fields = ("preview",)
     classes = ["collapse"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Использование кастомной формы для загрузки в S3."""
+        from .media_forms import ProductMediaForm
+
+        kwargs["form"] = ProductMediaForm
+        return super().get_formset(request, obj, **kwargs)
 
     def preview(self, obj):
         from .mixins import render_media_preview
 
         return render_media_preview(obj, size=100)
+
+    def delete_model(self, request, obj):
+        """Удаление медиафайла с cleanup из S3 если не используется."""
+        old_url = obj.url
+        obj.delete()
+
+        if old_url:
+            try:
+                storage_service = StorageService()
+                storage_service.cleanup_unused(
+                    file_url=old_url,
+                    model_class=ProductMedia,
+                    field_name="url",
+                )
+            except Exception as e:
+                logger.error(f"Ошибка при удалении файла из S3: {str(e)}")
+
 
 
 class ProductVariantInline(admin.TabularInline):

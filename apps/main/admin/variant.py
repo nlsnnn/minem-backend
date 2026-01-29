@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.utils.html import format_html
 from ..models import ProductVariant, ProductMedia
 from .mixins import TimestampMixin, render_image_preview
-from .inlines import ProductMediaInline
 
 
 @admin.action(description="Массовое обновление цен")
@@ -77,7 +76,6 @@ def duplicate_variant(modeladmin, request, queryset):
 
 class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
     list_display = (
-        "preview",
         "product",
         "size",
         "sku",
@@ -89,7 +87,6 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
     list_filter = ("is_active", "product", "size")
     search_fields = ("sku", "product__name", "size")
     list_editable = ("stock", "is_active")
-    inlines = [ProductMediaInline]
     actions = [bulk_update_price, bulk_update_stock, duplicate_variant]
     autocomplete_fields = ["product"]
 

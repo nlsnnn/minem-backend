@@ -34,6 +34,7 @@ LOCAL_APPS = [
     "apps.main",
     "apps.orders",
     "apps.payment",
+    "apps.storage",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -121,6 +122,15 @@ STATICFILES_FINDERS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Yandex Cloud Object Storage
+YANDEX_STORAGE_ACCESS_KEY = config("YANDEX_STORAGE_ACCESS_KEY", default="")
+YANDEX_STORAGE_SECRET_KEY = config("YANDEX_STORAGE_SECRET_KEY", default="")
+YANDEX_STORAGE_BUCKET_NAME = config("YANDEX_STORAGE_BUCKET_NAME", default="")
+YANDEX_STORAGE_ENDPOINT = config(
+    "YANDEX_STORAGE_ENDPOINT", default="https://storage.yandexcloud.net"
+)
+YANDEX_STORAGE_REGION = config("YANDEX_STORAGE_REGION", default="ru-central1")
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -202,6 +212,7 @@ LOGGING = {
             "maxBytes": 10485760,
             "backupCount": 5,
             "formatter": "verbose",
+            "encoding": "utf-8",
         },
         "payment_file": {
             "level": "INFO",
@@ -210,6 +221,16 @@ LOGGING = {
             "maxBytes": 10485760,
             "backupCount": 5,
             "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+        "storage_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/storage.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
         },
     },
     "loggers": {
@@ -220,6 +241,11 @@ LOGGING = {
         },
         "apps.orders": {
             "handlers": ["file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "apps.storage": {
+            "handlers": ["storage_file"],
             "level": "INFO",
             "propagate": False,
         },

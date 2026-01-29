@@ -17,7 +17,7 @@ class CategoryAdmin(TimestampMixin, admin.ModelAdmin):
 
 
 class ProductAdmin(TimestampMixin, admin.ModelAdmin):
-    list_display = ("name", "group", "color", "price", "is_active", "created_at")
+    list_display = ("preview", "name", "group", "color", "price", "is_active", "created_at")
     list_filter = ("is_active", "group", "color")
     search_fields = ("name", "slug", "group__name", "color__name")
     prepopulated_fields = {"slug": ("name",)}
@@ -52,6 +52,21 @@ class ProductAdmin(TimestampMixin, admin.ModelAdmin):
         ),
         ("Даты", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
+
+    def preview(self, obj):
+        """Отображение превью главного изображения товара."""
+        main_media = obj.media.filter(is_main=True).first()
+        if not main_media:
+            main_media = obj.media.first()
+        
+        if main_media:
+            return format_html(
+                '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />',
+                main_media.url
+            )
+        return "-"
+    
+    preview.short_description = "Фото"
 
 
 class ProductGroupAdmin(TimestampMixin, admin.ModelAdmin):

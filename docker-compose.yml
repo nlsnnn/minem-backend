@@ -53,6 +53,13 @@ services:
       - YANDEX_STORAGE_ENDPOINT=${YANDEX_STORAGE_ENDPOINT:-https://storage.yandexcloud.net}
       - YANDEX_STORAGE_REGION=${YANDEX_STORAGE_REGION:-ru-central1}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+      - EMAIL_HOST=${EMAIL_HOST:-smtp.yandex.ru}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-Minem <noreply@minem.com>}
     volumes:
       - ./media:/app/media
       - ./logs:/app/logs

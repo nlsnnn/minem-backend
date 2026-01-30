@@ -79,11 +79,20 @@ DATABASES = {
         "PASSWORD": config("DB_PASSWORD", default=""),
         "HOST": config("DB_HOST", default=""),
         "PORT": config("DB_PORT", default=""),
-        "OPTIONS": {
-            "connect_timeout": 10,
-        } if config("DB_ENGINE", default="").startswith("django.db.backends.postgresql") else {},
     }
 }
+
+# Добавляем специфичные настройки для каждой БД
+if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    # SQLite: увеличиваем timeout для уменьшения "database is locked" ошибок
+    DATABASES['default']['OPTIONS'] = {
+        'timeout': 20,  # Ждём до 20 секунд перед ошибкой
+    }
+elif DATABASES['default']['ENGINE'].startswith('django.db.backends.postgresql'):
+    # PostgreSQL: настройки подключения
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
+    }
 
 
 # Password validation
@@ -196,10 +205,11 @@ EMAIL_BACKEND = config(
 )
 EMAIL_HOST = config("EMAIL_HOST", default="localhost")
 EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
-EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
+EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=False, cast=bool)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@newssite.com")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="Minem <noreply@minem.com>")
 
 # Logging configuration
 LOGGING = {
@@ -239,6 +249,15 @@ LOGGING = {
             "formatter": "verbose",
             "encoding": "utf-8",
         },
+        "email_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/email.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
     },
     "loggers": {
         "apps.payment": {
@@ -251,9 +270,19 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
+        "apps.orders.services.email_service": {
+            "handlers": ["email_file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
         "apps.storage": {
             "handlers": ["storage_file"],
             "level": "INFO",
+            "propagate": False,
+        },
+        "django.core.mail": {
+            "handlers": ["email_file"],
+            "level": "DEBUG",
             "propagate": False,
         },
     },

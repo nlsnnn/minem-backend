@@ -93,6 +93,19 @@ class Command(BaseCommand):
                         f"возвращено позиций: {order.items.count()}"
                     )
 
+                    # Отправка email клиенту
+                    try:
+                        from apps.orders.services.email_service import EmailService
+                        
+                        EmailService.send_order_canceled(
+                            order,
+                            reason="Заказ не был оплачен в течение 2 часов"
+                        )
+                    except Exception as email_error:
+                        logger.error(
+                            f"Ошибка при отправке email для заказа {order.id}: {str(email_error)}"
+                        )
+
             except Exception as e:
                 logger.error(
                     f"Ошибка при отмене заказа {order.id}: {str(e)}",

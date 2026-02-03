@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Crontab для автоматической отмены просроченных заказов
+# Добавьте в crontab: crontab -e
+
+# Запуск каждые 30 минут
+*/30 * * * * cd /path/to/project && /path/to/venv/bin/python manage.py cancel_expired_orders --hours=2 >> /var/log/cancel_orders.log 2>&1
+
+# Для Docker:
+# */30 * * * * docker-compose exec -T web python manage.py cancel_expired_orders --hours=2 >> /var/log/cancel_orders.log 2>&1
+
+# Для тестирования (каждую минуту):
+# * * * * * cd /path/to/project && /path/to/venv/bin/python manage.py cancel_expired_orders --hours=1 --dry-run

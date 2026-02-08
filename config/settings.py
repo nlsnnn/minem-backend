@@ -31,6 +31,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "apps.common",
     "apps.main",
     "apps.orders",
     "apps.payment",
@@ -84,15 +85,15 @@ DATABASES = {
 }
 
 # Добавляем специфичные настройки для каждой БД
-if DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # SQLite: увеличиваем timeout для уменьшения "database is locked" ошибок
-    DATABASES['default']['OPTIONS'] = {
-        'timeout': 20,  # Ждём до 20 секунд перед ошибкой
+    DATABASES["default"]["OPTIONS"] = {
+        "timeout": 20,  # Ждём до 20 секунд перед ошибкой
     }
-elif DATABASES['default']['ENGINE'].startswith('django.db.backends.postgresql'):
+elif DATABASES["default"]["ENGINE"].startswith("django.db.backends.postgresql"):
     # PostgreSQL: настройки подключения
-    DATABASES['default']['OPTIONS'] = {
-        'connect_timeout': 10,
+    DATABASES["default"]["OPTIONS"] = {
+        "connect_timeout": 10,
     }
 
 
@@ -176,6 +177,12 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
+    # Rate limiting
+    "DEFAULT_THROTTLE_RATES": {
+        "order_create": "5/minute",  # Создание заказов
+        "contact_form": "3/hour",  # Контактная форма
+        "webhook": "100/minute",  # Вебхуки платежей
+    },
 }
 
 # CORS Configuration

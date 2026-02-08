@@ -2,7 +2,7 @@ import json
 import logging
 
 from rest_framework import generics, status, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 
 from yookassa.domain.notification import WebhookNotification
@@ -10,6 +10,7 @@ from yookassa.domain.notification import WebhookNotification
 from .service import PaymentService
 from .models import Payment
 from .serializers import PaymentSerializer
+from apps.common.throttling import WebhookThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +28,22 @@ class PaymentDetailView(generics.RetrieveAPIView):
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([WebhookThrottle])
 def yookassa_webhook(request):
     """
     Вебхук для обработки событий от Yookassa.
     """
     request_body = request.body
+
+    # Проверка IP адреса отправителя (YooKassa)
+    client_ip = PaymentService.get_client_ip(request)
+    if not PaymentService.validate_yookassa_ip(client_ip):
+        logger.warning(
+            f"Webhook rejected: invalid IP {client_ip}. Expected YooKassa IPs."
+        )
+        return Response(
+            {"error": "Invalid request source"}, status=status.HTTP_403_FORBIDDEN
+        )
 
     try:
         notification = WebhookNotification(json.loads(request_body))

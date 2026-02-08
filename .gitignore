@@ -34,6 +34,10 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+.env.production
+.env.local
+.env*.local
 .spyderproject
 .spyproject
 .ropeproject

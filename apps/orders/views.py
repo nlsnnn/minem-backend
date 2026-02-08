@@ -1,9 +1,9 @@
-from rest_framework import generics, filters, pagination, status, permissions
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from rest_framework import generics, permissions
+
 
 from .models import Order
 from .serializers import OrderSerializer, OrderCreateSerializer
+from apps.common.throttling import OrderCreateThrottle
 
 
 class OrderDetailView(generics.RetrieveAPIView):
@@ -25,3 +25,4 @@ class OrderCreateView(generics.CreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderCreateSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [OrderCreateThrottle]

@@ -4,9 +4,11 @@ WORKDIR /app
 
 # Копируем зависимости и ставим их
 COPY pyproject.toml poetry.lock* ./
-RUN pip install --no-cache-dir poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --no-root --only main && \
+RUN pip install --no-cache-dir poetry 
+
+RUN poetry config virtualenvs.create false 
+
+RUN poetry install --no-interaction --no-ansi --no-root --only main && \
     pip uninstall -y poetry
 
 # Копируем код приложения
@@ -14,7 +16,7 @@ COPY . .
 
 # Создаем папки и юзера
 RUN useradd -m -u 1000 django && \
-    mkdir -p /app/logs /app/media /app/static && \
+    mkdir -p /app/logs /app/media /app/static /app/staticfiles && \
     chown -R django:django /app && \
     chmod +x /app/entrypoint.sh
 

@@ -10,12 +10,13 @@ django = "5.2.10"
 pillow = "^12.1.0"
 djangorestframework = "^3.16.1"
 django-cors-headers = "^4.9.0"
-psycopg2 = "^2.9.11"
 django-filter = "^25.2"
 python-decouple = "^3.8"
 yookassa = "^3.9.0"
 boto3 = "^1.35.0"
 gunicorn = "^23.0.0"
+requests = "^2.32.0"
+psycopg2-binary = "^2.9.11"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

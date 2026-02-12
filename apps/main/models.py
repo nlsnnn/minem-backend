@@ -310,6 +310,26 @@ class ProductVariant(models.Model):
     )
     stock = models.PositiveIntegerField(default=0, verbose_name="Количество на складе")
     is_active = models.BooleanField(default=True, verbose_name="Доступен для заказа")
+    weight = models.PositiveIntegerField(
+        default=500,
+        verbose_name="Вес (грамм)",
+        help_text="Вес одной единицы товара в граммах",
+    )
+    dimension_length = models.PositiveIntegerField(
+        default=30,
+        verbose_name="Длина (см)",
+        help_text="Длина упаковки в сантиметрах",
+    )
+    dimension_width = models.PositiveIntegerField(
+        default=20,
+        verbose_name="Ширина (см)",
+        help_text="Ширина упаковки в сантиметрах",
+    )
+    dimension_height = models.PositiveIntegerField(
+        default=10,
+        verbose_name="Высота (см)",
+        help_text="Высота упаковки в сантиметрах",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Создано")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Обновлено")
 

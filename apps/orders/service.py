@@ -29,9 +29,6 @@ class OrderCreationService:
     ) -> Order:
         """
         Создает заказ с платежом.
-            items_data: Список товаров в заказе
-            customer_data: Данные покупателя
-            return_url: URL для возврата после оплаты
         """
         with transaction.atomic():
             variant_ids = [item["product_variant"].id for item in items_data]
@@ -40,23 +37,45 @@ class OrderCreationService:
                 is_active=True,
             )
 
-            # 2. Валидация и подсчет суммы
-            validated_items, total_amount = self._validate_and_calculate_items(
+            validated_items, items_total = self._validate_and_calculate_items(
                 items_data, variants
             )
 
-            # 3. Создаем заказ
+            delivery_cost = Decimal("0")
+            delivery_method = "self_pickup"
+
+            shipping_address = customer_data.get("shipping_address")
+
+            if shipping_address:
+                from apps.delivery.service import DeliveryService
+
+                delivery_service = DeliveryService()
+
+                try:
+                    delivery_cost = delivery_service.calculate_delivery_cost(
+                        items_data=validated_items,
+                        destination_address=shipping_address,
+                        tariff=delivery_method,
+                    )
+                    logger.info(f"Delivery cost calculated: {delivery_cost} RUB")
+                except Exception as e:
+                    logger.error(f"Failed to calculate delivery cost: {e}")
+                    from django.conf import settings
+                    delivery_cost = Decimal(str(settings.DEFAULT_DELIVERY_COST))
+
+            total_amount = items_total + delivery_cost
+
             order = Order.objects.create(
-                total_amount=total_amount, status="awaiting_payment"
+                total_amount=total_amount,
+                delivery_cost=delivery_cost,
+                delivery_method=delivery_method,
+                status="awaiting_payment",
             )
 
-            # 4. Создаем информацию о клиенте
             customer = OrderCustomer.objects.create(order=order, **customer_data)
 
-            # 5. Создаем позиции заказа и уменьшаем запасы
             self._create_order_items_and_update_stock(order, validated_items)
 
-            # 6. Создаем платеж
             try:
                 payment_url = self._create_payment(
                     order, total_amount, return_url, customer.email
@@ -64,7 +83,9 @@ class OrderCreationService:
                 order.payment_url = payment_url
                 order.save(update_fields=["payment_url"])
 
-                logger.info(f"Order {order.id} created successfully with payment")
+                logger.info(
+                    f"Order {order.id} created successfully with payment and delivery"
+                )
                 return order
 
             except Exception as e:
@@ -88,7 +109,6 @@ class OrderCreationService:
             requested_variant = item_data["product_variant"]
             requested_quantity = int(item_data.get("quantity", 1))
 
-            # Поиск варианта в заблокированных
             variant = next((v for v in variants if v.id == requested_variant.id), None)
 
             if not variant or not variant.is_active:
@@ -133,17 +153,13 @@ class OrderCreationService:
             variant = item_data["product_variant"]
             quantity = item_data["quantity"]
 
-            # Создаем позицию заказа
             order_items.append(OrderItem(order=order, **item_data))
 
-            # Сохраняем текущий остаток
             stock_before = variant.stock
 
-            # Уменьшаем запас
             variant.stock -= quantity
             variant.save(update_fields=["stock"])
 
-            # Создаем запись в истории остатков
             stock_history_records.append(
                 StockHistory(
                     product_variant=variant,
@@ -156,7 +172,6 @@ class OrderCreationService:
                 )
             )
 
-        # Создаем все позиции одним запросом
         OrderItem.objects.bulk_create(order_items)
         StockHistory.objects.bulk_create(stock_history_records)
 
@@ -175,7 +190,6 @@ class OrderCreationService:
             customer_email=customer_email,
         )
 
-        # Сохраняем запись о платеже
         Payment.objects.create(
             order=order,
             provider="yookassa",

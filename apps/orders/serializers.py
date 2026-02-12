@@ -155,7 +155,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if len(value) > 50:
             raise serializers.ValidationError("Максимум 50 товаров в одном заказе")
 
-        # Проверка на дубликаты вариантов
         variant_ids = [item["product_variant"].id for item in value]
         if len(variant_ids) != len(set(variant_ids)):
             raise serializers.ValidationError(
@@ -166,7 +165,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """
-        Создает заказ с платежом через сервис.
+        Создает заказ с платежом.
         """
         items_data = validated_data.pop("items", [])
         if len(items_data) == 0:

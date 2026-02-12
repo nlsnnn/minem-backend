@@ -92,6 +92,19 @@ class ProductVariantAdmin(TimestampMixin, admin.ModelAdmin):
 
     fieldsets = (
         (None, {"fields": ("product", "size", "sku", "price", "stock", "is_active")}),
+        (
+            "Габариты и вес для доставки",
+            {
+                "fields": (
+                    "weight",
+                    "dimension_length",
+                    "dimension_width",
+                    "dimension_height",
+                ),
+                "classes": ("collapse",),
+                "description": "Вес в граммах, размеры в сантиметрах. Используются для расчета стоимости доставки.",
+            },
+        ),
         ("Медиа", {"fields": ("media_gallery",)}),
         ("Даты", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )

@@ -36,6 +36,23 @@ class Order(models.Model):
         verbose_name="Общая сумма заказа",
         help_text="Сумма всех товаров в заказе",
     )
+    delivery_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        verbose_name="Стоимость доставки",
+        help_text="Стоимость доставки в рублях",
+    )
+    delivery_method = models.CharField(
+        max_length=50,
+        choices=[
+            ("time_interval", "До двери"),
+            ("self_pickup", "Самовывоз из ПВЗ"),
+        ],
+        default="self_pickup",
+        verbose_name="Способ доставки",
+        help_text="Выбранный способ доставки",
+    )
     payment_url = models.URLField(
         max_length=500,
         blank=True,

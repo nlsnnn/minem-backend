@@ -11,7 +11,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "domen.com",
     "www.domen.com",
-    "2t6cc8-77-91-65-140.ru.tuna.am",
+    "0i2joa-178-206-213-229.ru.tuna.am",
 ]
 
 # Application definition
@@ -37,6 +37,7 @@ LOCAL_APPS = [
     "apps.payment",
     "apps.storage",
     "apps.contacts",
+    "apps.delivery",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -149,6 +150,17 @@ YANDEX_STORAGE_ENDPOINT = config(
 )
 YANDEX_STORAGE_REGION = config("YANDEX_STORAGE_REGION", default="ru-central1")
 
+# Yandex Delivery Service
+YANDEX_DELIVERY_API_KEY = config("YANDEX_DELIVERY_API_KEY", default="")
+YANDEX_DELIVERY_WAREHOUSE_ID = config("YANDEX_DELIVERY_WAREHOUSE_ID", default="")
+# Тестовое окружение: https://b2b.taxi.tst.yandex.net/api/b2b/platform
+# Продакшен: https://b2b-authproxy.taxi.yandex.net/api/b2b/platform
+YANDEX_DELIVERY_BASE_URL = config(
+    "YANDEX_DELIVERY_BASE_URL",
+    default="https://b2b.taxi.tst.yandex.net/api/b2b/platform",
+)
+DEFAULT_DELIVERY_COST = config("DEFAULT_DELIVERY_COST", default=400, cast=int)
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -198,6 +210,34 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
+# ВАЖНО: Включите эти настройки при использовании HTTPS в продакшене
+# SECURE_SSL_REDIRECT = not DEBUG  # Редирект HTTP -> HTTPS
+# SESSION_COOKIE_SECURE = not DEBUG  # Только HTTPS для session cookie
+# CSRF_COOKIE_SECURE = not DEBUG  # Только HTTPS для CSRF cookie
+# SECURE_HSTS_SECONDS = 31536000  # HTTP Strict Transport Security (1 год)
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# SECURE_HSTS_PRELOAD = True
+
+# CORS - добавьте только реальные домены!
+CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Protection
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://domen.com",
+    "https://www.domen.com",
+]
+
+# Session security
+SESSION_COOKIE_HTTPONLY = True  # Защита от XSS
+SESSION_COOKIE_SAMESITE = "Lax"  # Защита от CSRF
+SESSION_COOKIE_AGE = 86400  # 24 часа
+
+# CSRF security
+CSRF_COOKIE_HTTPONLY = False  # False для JS доступа (если нужно)
+CSRF_COOKIE_SAMESITE = "Lax"
+
 
 # Yookassa Settings
 YOOKASSA_ACCOUNT_ID = config("YOOKASSA_ACCOUNT_ID", default="")
@@ -230,6 +270,11 @@ LOGGING = {
         },
     },
     "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
         "file": {
             "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
@@ -266,15 +311,24 @@ LOGGING = {
             "formatter": "verbose",
             "encoding": "utf-8",
         },
+        "delivery_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs/delivery.log",
+            "maxBytes": 10485760,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
     },
     "loggers": {
         "apps.payment": {
-            "handlers": ["payment_file"],
+            "handlers": ["payment_file", "console"],
             "level": "INFO",
             "propagate": False,
         },
         "apps.orders": {
-            "handlers": ["file"],
+            "handlers": ["file", "console"],
             "level": "INFO",
             "propagate": False,
         },
@@ -286,6 +340,11 @@ LOGGING = {
         "apps.storage": {
             "handlers": ["storage_file"],
             "level": "INFO",
+            "propagate": False,
+        },
+        "apps.delivery": {
+            "handlers": ["delivery_file", "console"],
+            "level": "DEBUG",
             "propagate": False,
         },
         "django.core.mail": {

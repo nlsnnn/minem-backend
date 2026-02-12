@@ -204,13 +204,7 @@ class PaymentService:
             event_type="payment.succeeded",
             payload=payload,
         )
-        logger.info(
-            f"[DB TRANSACTION] PaymentEvent created for {payment.provider_payment_id}"
-        )
-
-        logger.info(
-            f"Payment {payment.provider_payment_id} succeeded, order {order.id} marked as paid"
-        )
+        logger.info(f"[DB TRANSACTION] PaymentEvent created")
 
         return order
 

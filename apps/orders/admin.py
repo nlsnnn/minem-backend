@@ -61,17 +61,23 @@ class OrderAdmin(admin.ModelAdmin):
         "customer_name",
         "status_badge",
         "total_amount",
+        "delivery_cost_display",
         "items_count",
         "created_at",
     )
-    list_filter = ("status", "created_at")
+    list_filter = ("status", "delivery_method", "created_at")
     search_fields = (
         "id",
         "customer_info__full_name",
         "customer_info__email",
         "customer_info__phone",
     )
-    readonly_fields = ("id", "created_at", "updated_at", "payment_link")
+    readonly_fields = (
+        "id",
+        "created_at",
+        "updated_at",
+        "payment_link",
+    )
     date_hierarchy = "created_at"
     inlines = [OrderCustomerInline, OrderItemInline, StockHistoryInline]
     actions = [
@@ -88,6 +94,13 @@ class OrderAdmin(admin.ModelAdmin):
             {
                 "fields": ("id", "status", "total_amount"),
                 "description": "Основная информация о заказе",
+            },
+        ),
+        (
+            "Доставка",
+            {
+                "fields": ("delivery_cost", "delivery_method"),
+                "classes": ("collapse",),
             },
         ),
         (
@@ -153,6 +166,14 @@ class OrderAdmin(admin.ModelAdmin):
         return "Не создана"
 
     payment_link.short_description = "Ссылка для оплаты"
+
+    def delivery_cost_display(self, obj):
+        """Отображение стоимости доставки"""
+        if obj.delivery_cost > 0:
+            return f"{obj.delivery_cost} ₽"
+        return "Бесплатно"
+
+    delivery_cost_display.short_description = "Доставка"
 
     # Actions
     def mark_as_paid(self, request, queryset):

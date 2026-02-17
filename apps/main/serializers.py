@@ -47,7 +47,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     group = ProductGroupBriefSerializer(read_only=True)
     color = ColorSerializer(read_only=True)
-    main_image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
     available_sizes = serializers.SerializerMethodField()
     in_stock = serializers.SerializerMethodField()
     excerpt = serializers.SerializerMethodField()
@@ -61,17 +61,15 @@ class ProductListSerializer(serializers.ModelSerializer):
             "group",
             "color",
             "price",
-            "main_image",
+            "images",
             "available_sizes",
             "in_stock",
             "excerpt",
         ]
 
-    def get_main_image(self, obj):
-        main_media = obj.media.filter(is_main=True).first()
-        if not main_media:
-            main_media = obj.media.first()
-        return main_media.url if main_media else None
+    def get_images(self, obj):
+        media_qs = obj.media.all().order_by("-is_main", "position")
+        return [m.url for m in media_qs]
 
     def get_available_sizes(self, obj):
         return list(
@@ -90,18 +88,16 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 class RelatedColorSerializer(serializers.ModelSerializer):
     color = ColorSerializer(read_only=True)
-    main_image = serializers.SerializerMethodField()
+    images = serializers.SerializerMethodField()
     in_stock = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ["id", "name", "slug", "color", "price", "main_image", "in_stock"]
+        fields = ["id", "name", "slug", "color", "price", "images", "in_stock"]
 
-    def get_main_image(self, obj):
-        main_media = obj.media.filter(is_main=True).first()
-        if not main_media:
-            main_media = obj.media.first()
-        return main_media.url if main_media else None
+    def get_images(self, obj):
+        media_qs = obj.media.all().order_by("-is_main", "position")
+        return [m.url for m in media_qs]
 
     def get_in_stock(self, obj):
         return obj.variants.filter(is_active=True, stock__gt=0).exists()

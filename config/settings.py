@@ -9,9 +9,8 @@ DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "domen.com",
-    "www.domen.com",
-    "0i2joa-178-206-213-229.ru.tuna.am",
+    "minem-kiem.ru",
+    "www.minem-kiem.ru",
 ]
 
 # Application definition
@@ -168,7 +167,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -182,7 +180,6 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
-        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
@@ -199,10 +196,10 @@ REST_FRAMEWORK = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Укажите порт, на котором работает ваш Vue.js
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://domen.com",
-    "https://www.domen.com",
+    "https://minem-kiem.ru",
+    "https://www.minem-kiem.ru",
 ]
 
 # Security Settings
@@ -210,13 +207,14 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
-# ВАЖНО: Включите эти настройки при использовании HTTPS в продакшене
-# SECURE_SSL_REDIRECT = not DEBUG  # Редирект HTTP -> HTTPS
-# SESSION_COOKIE_SECURE = not DEBUG  # Только HTTPS для session cookie
-# CSRF_COOKIE_SECURE = not DEBUG  # Только HTTPS для CSRF cookie
-# SECURE_HSTS_SECONDS = 31536000  # HTTP Strict Transport Security (1 год)
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+# ВАЖНО: Nginx уже делает редирект HTTP->HTTPS, Django НЕ должен этого делать
+# SECURE_SSL_REDIRECT отключен чтобы избежать циклических редиректов
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # CORS - добавьте только реальные домены!
 CORS_ALLOW_CREDENTIALS = True
@@ -225,8 +223,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://domen.com",
-    "https://www.domen.com",
+    "https://minem-kiem.ru",
+    "https://www.minem-kiem.ru",
 ]
 
 # Session security

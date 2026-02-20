@@ -14,13 +14,9 @@ RUN poetry install --no-interaction --no-ansi --no-root --only main && \
 # Копируем код приложения
 COPY . .
 
-# Создаем папки и юзера
-RUN useradd -m -u 1000 django && \
-    mkdir -p /app/logs /app/media /app/static /app/staticfiles && \
-    chown -R django:django /app && \
+# Создаем папки
+RUN mkdir -p /app/logs /app/media /app/static /app/staticfiles && \
     chmod +x /app/entrypoint.sh
-
-USER django
 
 EXPOSE 8000
 
